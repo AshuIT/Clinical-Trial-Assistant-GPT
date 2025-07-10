@@ -1,0 +1,30 @@
+import streamlit as st
+from transformers import pipeline
+
+chatbot = pipeline(model="facebook/blenderbot-400M-distill")
+
+def render_ui():
+    st.title("Clinical Trial Assistant")
+    st.markdown("Welcome to your AI assistant for clinical trial support. Type your message below.")
+
+    if 'conversation_history' not in st.session_state:
+        st.session_state.conversation_history = []
+
+    user_input = st.text_input("You:")
+
+    if st.button("Chat"):
+        if user_input:
+            st.session_state.conversation_history.append(f"You: {user_input}")
+            try:
+                response = chatbot(user_input)[0]["generated_text"]
+            except Exception as e:
+                response = f"Error: {str(e)}"
+            st.session_state.conversation_history.append(f"Assistant: {response}")
+            st.text_area("Assistant:", response, height=150)
+
+    st.markdown("## Conversation History")
+    for message in st.session_state.conversation_history[-5:]:
+        st.text(message)
+
+if __name__ == "__main__":
+    render_ui()
